@@ -1,10 +1,5 @@
 package org.cafebueno.jedns;
 
-import org.cafebueno.jedns.fetcher.IpAddressFetcher;
-import org.cafebueno.jedns.fetcher.IpAdressFetcherException;
-
-import org.cafebueno.jedns.fetcher.WRTRouterIpAddressFetcher;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -25,17 +20,53 @@ import org.apache.http.client.utils.URIUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.cafebueno.jedns.fetcher.IpAddressFetcher;
+import org.cafebueno.jedns.fetcher.IpAdressFetcherException;
+import org.cafebueno.jedns.fetcher.WRTRouterIpAddressFetcher;
 
 public class EasyDnsClient {
 
+    public static final String DEFAULT_DOMAIN_MANAGEMENT_URL = "https://www.dnsmadeeasy.com/servlet/updateip";
+    public static final String DEFAULT_FETCHER_CLASS = WRTRouterIpAddressFetcher.class.getName();
+
     // https://www.dnsmadeeasy.com/servlet/updateip?username=test@example.com&password=mypass&id=1007,1008,1009&ip=12.13.14.15
-    private String domainManagementUrl = "https://www.dnsmadeeasy.com/servlet/updateip";
+    private String domainManagementUrl = DEFAULT_DOMAIN_MANAGEMENT_URL;
 
     private IpAddressFetcher fetcher;
     private String characterEncoding = "UTF-8";
 
-    public EasyDnsClient() {
-        fetcher = new WRTRouterIpAddressFetcher();
+    public EasyDnsClient() throws InitException {
+        this(DEFAULT_FETCHER_CLASS, DEFAULT_DOMAIN_MANAGEMENT_URL);
+    }
+
+    public EasyDnsClient(String fetcherClass, String domainManagementUrl) throws InitException {
+        if (domainManagementUrl == null) {
+            this.domainManagementUrl = DEFAULT_DOMAIN_MANAGEMENT_URL;
+        }
+        else {
+            this.domainManagementUrl = domainManagementUrl;
+        }
+        if (fetcherClass == null) {
+            fetcherClass = DEFAULT_FETCHER_CLASS;
+        }
+        initializeFetcher(fetcherClass);
+    }
+
+    private void initializeFetcher(String fetcherClass) throws InitException {
+        try {
+            @SuppressWarnings("unchecked")
+            Class< ? extends IpAddressFetcher> klazz = (Class< ? extends IpAddressFetcher>) Class.forName(fetcherClass);
+            fetcher = klazz.newInstance();
+        }
+        catch (InstantiationException e) {
+            throw new InitException("unable to initialize fetcher", e);
+        }
+        catch (IllegalAccessException e) {
+            throw new InitException("unable to initialize fetcher", e);
+        }
+        catch (ClassNotFoundException e) {
+            throw new InitException("unable to initialize fetcher", e);
+        }
     }
 
     public EasyDnsResponse updateRecord(String username, String password, String[] recordIds) throws IpAdressFetcherException, URISyntaxException {
@@ -43,8 +74,7 @@ public class EasyDnsClient {
         return postRequest(username, password, ipAddress, recordIds);
     }
 
-    protected EasyDnsResponse postRequest(String username, String password, String ipAddress, String[] recordIds) throws IpAdressFetcherException, URISyntaxException {
-
+    private EasyDnsResponse postRequest(String username, String password, String ipAddress, String[] recordIds) throws IpAdressFetcherException, URISyntaxException {
         try {
             HttpClient httpclient = new DefaultHttpClient();
 
@@ -106,5 +136,11 @@ public class EasyDnsClient {
 
     protected String fetchIpAddress() throws IpAdressFetcherException {
         return fetcher.fetchIpAddress();
+    }
+
+    public static class InitException extends Throwable {
+        private InitException(String arg0, Throwable arg1) {
+            super(arg0, arg1);
+        }
     }
 }
