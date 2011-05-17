@@ -1,0 +1,43 @@
+INSTALLING
+----------
+
+Assuming an installation folder of /opt/java/jedns.
+
+1. package:
+
+# mvn clean compile jar:jar
+
+2. copy jar to a specific folder:
+
+# cp target/jedns-1.0.0.jar /opt/java/jedns/
+
+3. get copies of dependencies and move them to a 'lib' subfolder:
+
+# mvn dependency:copy-dependencies
+# mv target/dependency /opt/java/jedns/lib
+
+The maven pom.xml is configured to write a classpath in MANIFEST.MF so that the jar executable 
+will look for the dependencies under 'lib' when run.
+
+RUNNING
+-------
+
+Assuming the directory structure above, you could use a shell script like this:
+
+---------------------
+
+#!/bin/bash
+
+
+JEDNS_DIR=/opt/java/jedns
+
+JAR_ARG="-jar $JEDNS_DIR/jedns-1.0.0.jar"
+FETCHER_CLASS="org.cafebueno.jedns.fetcher.LocalSystemIpAddressFetcher"
+USER=your_dnsmadeeasy_user
+PASS=your_dnsmadeeasy_password
+RECORD_ID=your_dnsmadeeasy_a_record_id
+
+java $JAR_ARG -f $FETCHER_CLASS -u $USER -p $PASS -r $RECORD_ID
+
+---------------------
+
