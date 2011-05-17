@@ -1,17 +1,37 @@
+OVERVIEW
+--------
+
+
+This is a quickie Java client for the DNS Made Easy Service, per this spec:
+
+http://www.dnsmadeeasy.com/client.txt
+
+It works by fetching an IP address and then submitting it to the DNSME service for updating.
+
+It allows you to write your own Fetcher class to specify how it should fetch the IP address.
+Currently, there are two fetcher classes implemented:
+
+- WTRouterIpAddressFetcher (default): parses the status page of a DD-WRT firmware router.
+
+- LocalSystemIpAddressFetcher: gets a specific IP address from the local system.  It defaults to 
+  the non-loopback address on 'eth0'.  The interface name can be configured.
+
 INSTALLING
 ----------
 
 Assuming an installation folder of /opt/java/jedns.
 
-1. package:
+1. set version in pom.xml (here we are using 1.0.0)
+
+2. package:
 
 # mvn clean compile jar:jar
 
-2. copy jar to a specific folder:
+3. copy jar to a specific folder:
 
 # cp target/jedns-1.0.0.jar /opt/java/jedns/
 
-3. get copies of dependencies and move them to a 'lib' subfolder:
+4. get copies of dependencies and move them to a 'lib' subfolder:
 
 # mvn dependency:copy-dependencies
 # mv target/dependency /opt/java/jedns/lib
