@@ -47,11 +47,21 @@
 				<configuration>
 					<archive>
 						<manifest>
+                            <classpathPrefix>lib</classpathPrefix>
 							<addClasspath>true</addClasspath>
 							<mainClass>org.cafebueno.jedns.EasyDnsClientCLI</mainClass>
 						</manifest>
+						<!-- <manifestEntries> <Class-Path>lib/</Class-Path> <Wtf>WTF</Wtf> </manifestEntries> -->
 					</archive>
 				</configuration>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 
 		</plugins>
