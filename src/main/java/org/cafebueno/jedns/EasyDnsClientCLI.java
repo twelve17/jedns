@@ -49,15 +49,15 @@ public class EasyDnsClientCLI {
             EasyDnsResponse response = client.updateRecord(usernameValue, passwordValue, splitRecordIds(recordIdList));
 
             if (shouldThrowError(response, isErrorOnIpSame)) {
-                System.err.print("received error response: " + response.name());
+                System.err.println("received error response: " + response.name());
                 System.exit(1);
             }
             else {
                 if (response.isIpSameError()) {
-                    System.out.print("ip address did not need updating");
+                    System.out.println("ip address did not need updating");
                 }
                 else {
-                    System.out.print("successfully updated address");
+                    System.out.println("successfully updated address");
                 }
                 System.exit(0);
             }
