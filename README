@@ -45,19 +45,14 @@ RUNNING
 Assuming the directory structure above, you could use a shell script like this:
 
 ---------------------
-
 #!/bin/bash
 
-
 JEDNS_DIR=/opt/java/jedns
-
-JAR_ARG="-jar $JEDNS_DIR/jedns-1.0.0.jar"
+JAR_FILE="jedns-1.0.0.jar"
 FETCHER_CLASS="org.cafebueno.jedns.fetcher.LocalSystemIpAddressFetcher"
 USER=your_dnsmadeeasy_user
 PASS=your_dnsmadeeasy_password
-RECORD_ID=your_dnsmadeeasy_a_record_id
+RECORD_ID=comma_delimited_list_of_your_dnsmadeeasy_a_record_id(s)
 
-java $JAR_ARG -f $FETCHER_CLASS -u $USER -p $PASS -r $RECORD_ID
-
+java -jar $JEDNS_DIR/$JAR_FILE -f $FETCHER_CLASS -u $USER -p $PASS -r $RECORD_ID
 ---------------------
-
