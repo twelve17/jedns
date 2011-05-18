@@ -29,10 +29,13 @@ public class EasyDnsClientCLI {
         Option recordIds = new Option("r", "record-ids", true, "comma separated list of record ids");
         recordIds.setRequired(true);
 
-        Options options = getOptions(domainManagementUrl, fetcherClass, username, password, recordIds);
+        Option errorOnIpSame = new Option("e", "error-on-same", false,
+                "exit with an error code if we get a 'error-record-ip-same' response (normally this one is treated as an 'ok' response)");
+        recordIds.setRequired(false);
+
+        Options options = getOptions(domainManagementUrl, fetcherClass, username, password, recordIds, errorOnIpSame);
 
         CommandLineParser parser = new PosixParser();
-        // parse the command line arguments
         try {
             CommandLine line = parser.parse(options, args);
             String domainManagementUrlValue = line.getOptionValue(domainManagementUrl.getOpt());
@@ -40,15 +43,22 @@ public class EasyDnsClientCLI {
             String recordIdList = line.getOptionValue(recordIds.getOpt());
             String usernameValue = line.getOptionValue(username.getOpt());
             String passwordValue = line.getOptionValue(password.getOpt());
+            boolean isErrorOnIpSame = line.hasOption(errorOnIpSame.getOpt());
 
             EasyDnsClient client = new EasyDnsClient(fetcherClassValue, domainManagementUrlValue);
             EasyDnsResponse response = client.updateRecord(usernameValue, passwordValue, splitRecordIds(recordIdList));
-            if (response.isErrorResponse()) {
+
+            if (shouldThrowError(response, isErrorOnIpSame)) {
                 System.err.print("received error response: " + response.name());
                 System.exit(1);
             }
             else {
-                System.out.print("successfully updated address");
+                if (response.isIpSameError()) {
+                    System.out.print("ip address did not need updating");
+                }
+                else {
+                    System.out.print("successfully updated address");
+                }
                 System.exit(0);
             }
         }
@@ -68,6 +78,20 @@ public class EasyDnsClientCLI {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+
+    private static boolean shouldThrowError(EasyDnsResponse response, boolean isErrorOnIpSame) {
+        if (isErrorOnIpSame) {
+            if (response.isErrorResponse()) {
+                return true;
+            }
+        }
+        else {
+            if (response.isErrorResponse() && !response.isIpSameError()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static Options getOptions(Option... optionItems) {

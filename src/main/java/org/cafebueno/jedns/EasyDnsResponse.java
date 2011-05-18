@@ -53,6 +53,10 @@ public enum EasyDnsResponse {
         return getCode().startsWith("error");
     }
 
+    public boolean isIpSameError() {
+        return equals(ERROR_RECORD_IP_SAME);
+    }
+
     public static EasyDnsResponse getByCode(String code) {
         return byCode.get(code);
     }
